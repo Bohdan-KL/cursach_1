@@ -7,6 +7,8 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.uix.screenmanager import RiseInTransition
+from kivy.uix.screenmanager import FallOutTransition
 
 Config.set("graphics", "resiziable", '0')
 Config.set("graphics", "width", '640')
@@ -21,6 +23,7 @@ class ChooseScreen(Screen):
     pass
 
 sm = ScreenManager()
+sm.transition=RiseInTransition()
 MenuScreen=Screen(name='menu')
 sm.add_widget(MenuScreen)
 ChooseScreen=Screen(name='choose')
@@ -58,13 +61,15 @@ class cursachApp(App):
             elif lim and lim1:
                 full_interface.remove_widget(hist)
                 lim = False
+        def to_chooser(self):
+            sm.current = 'choose'
 
         Create = AnchorLayout(anchor_x='left', anchor_y="bottom", padding=[25, 25, 25, 25])
         create = Button(text="Створити", size_hint=[0.3, 0.2])
         Create.add_widget(create)
         Create = AnchorLayout(anchor_x='left', anchor_y="bottom", padding=[25, 25, 25, 25])
         Choose = BoxLayout(orientation='vertical', spacing='5', size_hint=[0.3, 0.2])
-        choose = Button(text='Обрати файл', background_color=[0, 0.8, 0.8, 1])
+        choose = Button(text='Обрати файл', background_color=[0, 0.8, 0.8, 1], on_press=to_chooser)
         create = Button(text="Створити", background_color=[0.8, 0.8, 0, 1])
         Choose.add_widget(choose)
         Choose.add_widget(create)
@@ -89,8 +94,6 @@ class cursachApp(App):
         full_interface.add_widget(Create)
         full_interface.add_widget(Save)
         full_interface.add_widget(Exit)
-
-        # full_interface.add_widget(FileChooserListView())
 
         dropdown = DropDown()
 
@@ -121,8 +124,24 @@ class cursachApp(App):
         Type_of_graphic = AnchorLayout(anchor_x='left', anchor_y="top", padding=[25, 25, 25, 25])
         Type_of_graphic.add_widget(mainbutton)
         full_interface.add_widget(Type_of_graphic)
-
         MenuScreen.add_widget(full_interface)
+
+
+        Ch=AnchorLayout(anchor_x='left', anchor_y="top")
+
+        way_to_file=''
+        def open_chooser(self, Way_to_file, MouseMotionEvent):
+            way_to_file=Way_to_file
+            sm.transition = FallOutTransition()
+            sm.current = 'menu'
+            sm.transition = RiseInTransition()
+
+        Chooser=FileChooserListView(on_submit=open_chooser)
+        Chooser.filters=['*.csv']
+
+
+        Ch.add_widget(Chooser)
+        ChooseScreen.add_widget(Ch)
         sm.current = 'menu'
         return sm
 
