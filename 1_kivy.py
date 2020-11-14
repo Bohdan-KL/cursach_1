@@ -5,6 +5,7 @@ from kivy.config import Config
 from kivy.uix.dropdown import DropDown
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.filechooser import FileChooserListView
 
 Config.set("graphics","resiziable",'0')
 Config.set("graphics","width",'640')
@@ -80,6 +81,8 @@ class cursachApp(App):
         full_interface.add_widget(Save)
         full_interface.add_widget(Exit)
 
+        #full_interface.add_widget(FileChooserListView())
+
         dropdown=DropDown()
 
         hist=AnchorLayout(anchor_x='left', anchor_y="center", padding=[25,25,25,25])
@@ -101,7 +104,6 @@ class cursachApp(App):
         Point_x_y.add_widget(point_x_y)
 
 
-
         points = Button(text='Точковий',size_hint_y=None, height=70,background_color=[0.2,0.8,0.6,1])
         points.bind(on_release=lambda points: dropdown.select(points.text), on_press=point_press)
         dropdown.add_widget(points)
@@ -119,4 +121,4 @@ class cursachApp(App):
 
 if __name__ == '__main__':
     cursachApp().run()
-#python kivy_venv\1_kivy.py
+#python 1_kivy.py
