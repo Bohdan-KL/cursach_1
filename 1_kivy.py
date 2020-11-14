@@ -10,6 +10,8 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.screenmanager import RiseInTransition
 from kivy.uix.screenmanager import FallOutTransition
 from kivy.uix.label import Label
+import pandas as pd
+import numpy as np
 
 Config.set("graphics", "resiziable", '0')
 Config.set("graphics", "width", '640')
@@ -17,31 +19,26 @@ Config.set("graphics", "height", '480')
 
 lim = False
 lim1 = False
+way_to_file=''
 
 class MenuScreen(Screen):
     pass
 class ChooseScreen(Screen):
     pass
-class ItemsScreen_x(Screen):
+class ItemsScreen(Screen):
     pass
-class ItemsScreen_y(Screen):
-    pass
-class ItemsScreen_z(Screen):
-    pass
+
 
 sm = ScreenManager()
 sm.transition=RiseInTransition()
 
 MenuScreen=Screen(name='menu')
 ChooseScreen=Screen(name='choose')
-ItemsScreen_x=Screen(name='items_x')
-ItemsScreen_y=Screen(name='items_y')
-ItemsScreen_z=Screen(name='items_z')
+ItemsScreen=Screen(name='items')
 sm.add_widget(MenuScreen)
 sm.add_widget(ChooseScreen)
-sm.add_widget(ItemsScreen_x)
-sm.add_widget(ItemsScreen_y)
-sm.add_widget(ItemsScreen_z)
+sm.add_widget(ItemsScreen)
+
 
 
 class cursachApp(App):
@@ -55,6 +52,7 @@ class cursachApp(App):
                     situation.text = 'Графік обрано\nОберіть файл'
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
+                    create_items()
                 full_interface.add_widget(hist)
                 lim = True
             elif not lim and lim1:
@@ -62,6 +60,7 @@ class cursachApp(App):
                     situation.text = 'Графік обрано\nОберіть файл'
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
+                    create_items()
                 full_interface.remove_widget(Point_x_y)
                 full_interface.add_widget(hist)
                 lim = True
@@ -71,6 +70,7 @@ class cursachApp(App):
                     situation.text = 'Графік обрано\nОберіть файл'
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
+                    create_items()
                 full_interface.remove_widget(Point_x_y)
                 lim1 = False
 ########################################################################################################
@@ -82,6 +82,7 @@ class cursachApp(App):
                     situation.text = 'Графік обрано\nОберіть файл'
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
+                    create_items()
                 full_interface.add_widget(Point_x_y)
                 lim1 = True
             elif not lim1 and lim:
@@ -89,6 +90,7 @@ class cursachApp(App):
                     situation.text = 'Графік обрано\nОберіть файл'
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
+                    create_items()
                 full_interface.remove_widget(hist)
                 full_interface.add_widget(Point_x_y)
                 lim1 = True
@@ -98,6 +100,7 @@ class cursachApp(App):
                     situation.text = 'Графік обрано\nОберіть файл'
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
+                    create_items()
                 full_interface.remove_widget(hist)
                 lim = False
 #################################################################################################################
@@ -176,13 +179,16 @@ class cursachApp(App):
 
         Ch=AnchorLayout(anchor_x='left', anchor_y="top")
 
-        way_to_file=''
+
         def open_chooser(self, Way_to_file, MouseMotionEvent):
+            global way_to_file
+            way_to_file = Way_to_file
             if situation.text=="Оберіть csv-файл":
                 situation.text="Файл обрано\nОберіть вид графіка"
             elif situation.text == 'Графік обрано\nОберіть файл':
                 situation.text = 'Файл і графік обрано\nОберіть значення'
-            way_to_file=Way_to_file
+                create_items()
+
             sm.transition = FallOutTransition()
             sm.current = 'menu'
             sm.transition = RiseInTransition()
@@ -192,8 +198,11 @@ class cursachApp(App):
         Ch.add_widget(Chooser)
         ChooseScreen.add_widget(Ch)
         ###########################################################################################
-        #if situation=='Файл і графік обрано\nОберіть значення':
-        #    file=
+        def create_items():
+            if situation.text=='Файл і графік обрано\nОберіть значення':
+                file = pd.read_csv(way_to_file[0])
+                columns=file.columns.tolist()
+                print(columns)
         ###########################################################################################
         sm.current = 'menu'
         return sm
