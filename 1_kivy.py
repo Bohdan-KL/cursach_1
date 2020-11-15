@@ -11,8 +11,12 @@ from kivy.uix.screenmanager import RiseInTransition
 from kivy.uix.screenmanager import FallOutTransition
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
+from kivy.uix.image import Image
 import pandas as pd
-import numpy as np
+from matplotlib import pyplot
+
+
+
 
 Config.set("graphics", "resiziable", '0')
 Config.set("graphics", "width", '640')
@@ -207,9 +211,22 @@ class cursachApp(App):
             global file,X,Y,H
             if key:
                 if X and Y and not H:
-                    print('for x and y')
+                    data_x=file[X].tolist()
+                    data_y=file[Y].tolist()
+                    graphic,ax=pyplot.subplots()
+                    ax.plot(data_x,data_y)
+                    graphic.savefig(f'scatterplot for {X} and {Y}')
+
+                    Picture=AnchorLayout(anchor_x='center',anchor_y='top',padding=[300,-100,50,50])
+                    picture=Image(source=f'scatterplot for {X} and {Y}.png')
+                    Picture.add_widget(picture)
+                    full_interface.add_widget(Picture)
+
+
+                    #print(graphic)
+
                 elif not X and not Y and H:
-                    print("for h")
+                    print(0)
                 elif not X and not Y and not H:
                     if '\nОберіть значення!' not in situation.text: situation.text = '\nОберіть значення!'
                 elif not X and Y and not H:
@@ -249,11 +266,12 @@ class cursachApp(App):
         situation=Label(text='Оберіть csv-файл')
         Situation.add_widget(situation)
 
-        full_interface = FloatLayout(size=(480, 640))
+        full_interface = FloatLayout()
         full_interface.add_widget(Create)
         full_interface.add_widget(Save)
         full_interface.add_widget(Exit)
         full_interface.add_widget(Situation)
+
 
         dropdown = DropDown()
 
@@ -278,8 +296,9 @@ class cursachApp(App):
         dropdown.add_widget(points)
 
         mainbutton = Button(text='Вид графіка', size_hint=[0.3, 0.2])
-        mainbutton.bind(on_select=dropdown.open)
+        mainbutton.bind(on_release=dropdown.open)
         dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
+
 
         Type_of_graphic = AnchorLayout(anchor_x='left', anchor_y="top", padding=[25, 25, 25, 25])
         Type_of_graphic.add_widget(mainbutton)
