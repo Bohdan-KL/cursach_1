@@ -10,6 +10,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.screenmanager import RiseInTransition
 from kivy.uix.screenmanager import FallOutTransition
 from kivy.uix.label import Label
+from kivy.uix.gridlayout import GridLayout
 import pandas as pd
 import numpy as np
 
@@ -20,6 +21,7 @@ Config.set("graphics", "height", '480')
 lim = False
 lim1 = False
 way_to_file=''
+len_columns=1000
 
 class MenuScreen(Screen):
     pass
@@ -106,7 +108,12 @@ class cursachApp(App):
 #################################################################################################################
         def to_chooser(self):
             sm.current = 'choose'
-
+#################################################################################################################
+        def choose_item(self):
+            if len_columns!=1000:
+                sm.current='items'
+                sm.transition = FallOutTransition()
+            elif "\nСпершу оберіть файл" not in situation.text:situation.text+="\nСпершу оберіть файл"
 
 
         Create = AnchorLayout(anchor_x='left', anchor_y="bottom", padding=[25, 25, 25, 25])
@@ -148,7 +155,7 @@ class cursachApp(App):
         dropdown = DropDown()
 
         hist = AnchorLayout(anchor_x='left', anchor_y="center", padding=[25, 25, 25, 25])
-        hist_b = Button(text='Значення', size_hint=[0.3, 0.2])
+        hist_b = Button(text='Значення', size_hint=[0.3, 0.2],on_press=choose_item)
         hist.add_widget(hist_b)
 
         histogram = Button(text='Гістограма', size_hint_y=None, height=70, background_color=[0.2, 0.8, 0.6, 1])
@@ -157,8 +164,8 @@ class cursachApp(App):
 
         Point_x_y = AnchorLayout(anchor_x='left', anchor_y="center", padding=[25, 25, 25, 25])
         point_x_y = BoxLayout(orientation='vertical', spacing='5', size_hint=[0.3, 0.2])
-        button_x = Button(text='Значення x')
-        button_y = Button(text='Значення y')
+        button_x = Button(text='Значення x',on_press=choose_item)
+        button_y = Button(text='Значення y',on_press=choose_item)
         point_x_y.add_widget(button_x)
         point_x_y.add_widget(button_y)
         Point_x_y.add_widget(point_x_y)
@@ -185,10 +192,9 @@ class cursachApp(App):
             way_to_file = Way_to_file
             if situation.text=="Оберіть csv-файл":
                 situation.text="Файл обрано\nОберіть вид графіка"
-            elif situation.text == 'Графік обрано\nОберіть файл':
+            elif situation.text == 'Графік обрано\nОберіть файл' or "\nСпершу оберіть файл" in situation.text:
                 situation.text = 'Файл і графік обрано\nОберіть значення'
                 create_items()
-
             sm.transition = FallOutTransition()
             sm.current = 'menu'
             sm.transition = RiseInTransition()
@@ -198,15 +204,32 @@ class cursachApp(App):
         Ch.add_widget(Chooser)
         ChooseScreen.add_widget(Ch)
         ###########################################################################################
+
+
+        def items_function(self):
+            print(self.text)
+            sm.current = 'menu'
+            sm.transition = RiseInTransition()
+        ###########################################################################################
+        Items=GridLayout(cols=3,rows=len_columns)
         def create_items():
-            if situation.text=='Файл і графік обрано\nОберіть значення':
-                file = pd.read_csv(way_to_file[0])
-                columns=file.columns.tolist()
-                print(columns)
+            file = pd.read_csv(way_to_file[0])
+            columns=file.columns.tolist()
+            global len_columns
+            len_columns=((len(columns))//3)
+            if len(columns)%3!=0:len_columns+=1
+            print(len_columns)
+            print(len(columns))
+            for i in columns:
+                B=Button(text=i,on_press=items_function)
+                Items.add_widget(B)
+            ItemsScreen.add_widget(Items)
+            #sm.current = 'items'
+                #print(columns)
+
         ###########################################################################################
         sm.current = 'menu'
         return sm
-
 
 if __name__ == '__main__':
     cursachApp().run()
