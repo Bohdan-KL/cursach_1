@@ -18,8 +18,8 @@ Config.set("graphics", "resiziable", '0')
 Config.set("graphics", "width", '640')
 Config.set("graphics", "height", '480')
 
-lim = False
-lim1 = False
+X=Y=H=lim=lim1=file=key=False
+
 way_to_file=''
 len_columns=1000
 
@@ -42,13 +42,11 @@ sm.add_widget(ChooseScreen)
 sm.add_widget(ItemsScreen)
 
 
-
 class cursachApp(App):
     def build(self):
 ############################################################################################################
         def hist_press(self):
-            global lim
-            global lim1
+            global lim,lim1,X,Y,H
             if not lim and not lim1:
                 if situation.text == 'Оберіть csv-файл':
                     situation.text = 'Графік обрано\nОберіть файл'
@@ -63,6 +61,10 @@ class cursachApp(App):
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
                     create_items()
+                X = Y = H = False
+                button_x.text='Значення х'
+                button_y.text = 'Значення у'
+                hist_b.text="Значення"
                 full_interface.remove_widget(Point_x_y)
                 full_interface.add_widget(hist)
                 lim = True
@@ -73,12 +75,13 @@ class cursachApp(App):
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
                     create_items()
+
                 full_interface.remove_widget(Point_x_y)
                 lim1 = False
+            print(X, Y, H)
 ########################################################################################################
         def point_press(self):
-            global lim1
-            global lim
+            global lim, lim1, X, Y, H
             if not lim1 and not lim:
                 if situation.text == 'Оберіть csv-файл':
                     situation.text = 'Графік обрано\nОберіть файл'
@@ -93,6 +96,10 @@ class cursachApp(App):
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
                     create_items()
+                X = Y = H = False
+                button_x.text = 'Значення х'
+                button_y.text = 'Значення у'
+                hist_b.text = "Значення"
                 full_interface.remove_widget(hist)
                 full_interface.add_widget(Point_x_y)
                 lim1 = True
@@ -105,24 +112,120 @@ class cursachApp(App):
                     create_items()
                 full_interface.remove_widget(hist)
                 lim = False
+            print(X, Y, H)
 #################################################################################################################
         def to_chooser(self):
             sm.current = 'choose'
 #################################################################################################################
-        def choose_item(self):
+        Ch = AnchorLayout(anchor_x='left', anchor_y="top")
+
+        def open_chooser(self, Way_to_file, MouseMotionEvent):
+            global way_to_file, X, Y, H, key
+            X = Y = H = False
+            key = True
+            way_to_file = Way_to_file
+            situation.text = "Файл обрано"
+            create_items()
+            sm.transition = FallOutTransition()
+            sm.current = 'menu'
+            sm.transition = RiseInTransition()
+            print(X, Y, H)
+            if '\nОберіть файл!' in situation.text: situation.text = situation.text.replace('\nОберіть файл!', '')
+
+
+        Chooser = FileChooserListView(on_submit=open_chooser)
+        Chooser.filters = ['*.csv']
+        Ch.add_widget(Chooser)
+        ChooseScreen.add_widget(Ch)
+
+
+###########################################################################################
+
+        def items_function(self):
+            global X, Y, H
+            if X == 1:
+                X = self.text
+                button_x.text = X
+                situation.text = "Значення х обрано"
+            elif Y == 2:
+                Y = self.text
+                button_y.text = Y
+                situation.text = "Значення у обрано"
+            if H == 3:
+                H = self.text
+                hist_b.text = H
+                situation.text = "Будуйте графік"
+            if X and X != 1 and Y and Y != 1: situation.text = "Будуйте графік"
+            print(X, Y, H)
+            sm.current = 'menu'
+            sm.transition = RiseInTransition()
+
+
+###########################################################################################
+        def create_items():
+            global file, key
+            file = pd.read_csv(way_to_file[0])
+            columns = file.columns.tolist()
+            global len_columns
+            len_columns = ((len(columns)) // 3)
+            Items = GridLayout(cols=3, rows=len_columns)
+            if len(columns) % 3 != 0: len_columns += 1
+            for i in columns:
+                Items.add_widget(Button(text=i, on_press=items_function))
+            ItemsScreen.add_widget(Items)
+    # sm.current = 'items'
+    # print(columns)
+#################################################################################################################
+        def choose_item_item(self):
+            global H
             if len_columns!=1000:
+                H=3
                 sm.current='items'
                 sm.transition = FallOutTransition()
             elif "\nСпершу оберіть файл" not in situation.text:situation.text+="\nСпершу оберіть файл"
+            print(X,Y,H)
+#################################################################################################################
+        def choose_item_x(self):
+            global X
+            if len_columns!=1000:
+                X=1
+                sm.current='items'
+                sm.transition = FallOutTransition()
+            elif "\nСпершу оберіть файл" not in situation.text:situation.text+="\nСпершу оберіть файл"
+            print(X, Y, H)
+#################################################################################################################
+        def choose_item_y(self):
+            global Y
+            if len_columns!=1000:
+                Y=2
+                sm.current='items'
+                sm.transition = FallOutTransition()
+            elif "\nСпершу оберіть файл" not in situation.text:situation.text+="\nСпершу оберіть файл"
+            print(X, Y, H)
+#################################################################################################################
+        def create_graphic(self):
+            global file,X,Y,H
+            if key:
+                if X and Y and not H:
+                    print('for x and y')
+                elif not X and not Y and H:
+                    print("for h")
+                elif not X and not Y and not H:
+                    if '\nОберіть значення!' not in situation.text: situation.text = '\nОберіть значення!'
+                elif not X and Y and not H:
+                    if '\nОберіть значення x!' not in situation.text: situation.text = '\nОберіть значення x!'
+                elif X and not Y and not H:
+                    if '\nОберіть значення y!' not in situation.text: situation.text = '\nОберіть значення y!'
+            elif '\nОберіть файл!' not in situation.text:situation.text='\nОберіть файл!'
 
-
+#################################################################################################################
         Create = AnchorLayout(anchor_x='left', anchor_y="bottom", padding=[25, 25, 25, 25])
         create = Button(text="Створити", size_hint=[0.3, 0.2])
         Create.add_widget(create)
         Create = AnchorLayout(anchor_x='left', anchor_y="bottom", padding=[25, 25, 25, 25])
         Choose = BoxLayout(orientation='vertical', spacing='5', size_hint=[0.3, 0.2])
         choose = Button(text='Обрати файл', background_color=[0, 0.8, 0.8, 1], on_press=to_chooser)
-        create = Button(text="Створити", background_color=[0.8, 0.8, 0, 1])
+        create = Button(text="Побудувати", background_color=[0.8, 0.8, 0, 1],on_press=create_graphic)
         Choose.add_widget(choose)
         Choose.add_widget(create)
         Create.add_widget(Choose)
@@ -155,7 +258,7 @@ class cursachApp(App):
         dropdown = DropDown()
 
         hist = AnchorLayout(anchor_x='left', anchor_y="center", padding=[25, 25, 25, 25])
-        hist_b = Button(text='Значення', size_hint=[0.3, 0.2],on_press=choose_item)
+        hist_b = Button(text='Значення', size_hint=[0.3, 0.2],on_press=choose_item_item)
         hist.add_widget(hist_b)
 
         histogram = Button(text='Гістограма', size_hint_y=None, height=70, background_color=[0.2, 0.8, 0.6, 1])
@@ -164,8 +267,8 @@ class cursachApp(App):
 
         Point_x_y = AnchorLayout(anchor_x='left', anchor_y="center", padding=[25, 25, 25, 25])
         point_x_y = BoxLayout(orientation='vertical', spacing='5', size_hint=[0.3, 0.2])
-        button_x = Button(text='Значення x',on_press=choose_item)
-        button_y = Button(text='Значення y',on_press=choose_item)
+        button_x = Button(text='Значення x',on_press=choose_item_x)
+        button_y = Button(text='Значення y',on_press=choose_item_y)
         point_x_y.add_widget(button_x)
         point_x_y.add_widget(button_y)
         Point_x_y.add_widget(point_x_y)
@@ -175,57 +278,13 @@ class cursachApp(App):
         dropdown.add_widget(points)
 
         mainbutton = Button(text='Вид графіка', size_hint=[0.3, 0.2])
-        mainbutton.bind(on_release=dropdown.open)
+        mainbutton.bind(on_select=dropdown.open)
         dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
 
         Type_of_graphic = AnchorLayout(anchor_x='left', anchor_y="top", padding=[25, 25, 25, 25])
         Type_of_graphic.add_widget(mainbutton)
         full_interface.add_widget(Type_of_graphic)
         MenuScreen.add_widget(full_interface)
-
-
-        Ch=AnchorLayout(anchor_x='left', anchor_y="top")
-
-
-        def open_chooser(self, Way_to_file, MouseMotionEvent):
-            global way_to_file
-            way_to_file = Way_to_file
-            if situation.text=="Оберіть csv-файл":
-                situation.text="Файл обрано\nОберіть вид графіка"
-            elif situation.text == 'Графік обрано\nОберіть файл' or "\nСпершу оберіть файл" in situation.text:
-                situation.text = 'Файл і графік обрано\nОберіть значення'
-                create_items()
-            sm.transition = FallOutTransition()
-            sm.current = 'menu'
-            sm.transition = RiseInTransition()
-
-        Chooser=FileChooserListView(on_submit=open_chooser)
-        Chooser.filters=['*.csv']
-        Ch.add_widget(Chooser)
-        ChooseScreen.add_widget(Ch)
-        ###########################################################################################
-
-
-        def items_function(self):
-            print(self.text)
-            sm.current = 'menu'
-            sm.transition = RiseInTransition()
-        ###########################################################################################
-        Items=GridLayout(cols=3,rows=len_columns)
-        def create_items():
-            file = pd.read_csv(way_to_file[0])
-            columns=file.columns.tolist()
-            global len_columns
-            len_columns=((len(columns))//3)
-            if len(columns)%3!=0:len_columns+=1
-            print(len_columns)
-            print(len(columns))
-            for i in columns:
-                B=Button(text=i,on_press=items_function)
-                Items.add_widget(B)
-            ItemsScreen.add_widget(Items)
-            #sm.current = 'items'
-                #print(columns)
 
         ###########################################################################################
         sm.current = 'menu'
