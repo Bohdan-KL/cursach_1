@@ -26,7 +26,7 @@ X=Y=H=lim=lim1=file=list_of_types=columns=key=False
 
 way_to_file=''
 len_columns=1000
-
+Items = GridLayout(cols=3, rows=len_columns)
 class MenuScreen(Screen):
     pass
 class ChooseScreen(Screen):
@@ -50,6 +50,9 @@ sm.add_widget(Items_X_Y_Screen)
 
 class cursachApp(App):
     def build(self):
+
+
+
 ############################################################################################################
         def hist_press(self):
             global lim,lim1,X,Y,H
@@ -131,7 +134,6 @@ class cursachApp(App):
             print(X, Y, H)
             if '\nОберіть файл!' in situation.text: situation.text = situation.text.replace('\nОберіть файл!', '')
 
-
         Chooser = FileChooserListView(on_submit=open_chooser)
         Chooser.filters = ['*.csv']
         Ch.add_widget(Chooser)
@@ -161,24 +163,57 @@ class cursachApp(App):
 
 ###########################################################################################
         def func_exit_from_ItemsScreen(self):
+            global X,Y,H
+            if X==1:X=False
+            elif Y==2:Y=False
+            elif H==3:H=False
             sm.current = 'menu'
             sm.transition = RiseInTransition()
 ###########################################################################################
+        Items = GridLayout(cols=3, rows=len_columns)
         def create_items(screen):
-            global len_columns,list_of_types,columns
-            Items = GridLayout(cols=3, rows=len_columns)
-            exit_from_ItemsScreen = Button(text='Повернутися \nназад', background_color=[1, 0, 0, 1],on_press=func_exit_from_ItemsScreen)
-            label_for_Items=Label(text='Усі значення\nякі можна обрати:')
-            Items.add_widget(label_for_Items)
+            global len_columns,list_of_types,columns,Items
             if screen=='items_x_y':
-                for i in columns:
-                    if 'float' in str(list_of_types[i]) or 'int' in str(list_of_types[i]):Items.add_widget(Button(text=i, on_press=items_function))
-                Items.add_widget(exit_from_ItemsScreen)
-                Items_X_Y_Screen.add_widget(Items)
+                try:
+                    Items_X_Y_Screen.remove_widget(Items)
+                    Items = GridLayout(cols=3, rows=len_columns)
+                    exit_from_ItemsScreen = Button(text='Повернутися \nназад', background_color=[1, 0, 0, 1],on_press=func_exit_from_ItemsScreen)
+                    label_for_Items = Label(text='Усі значення\nякі можна обрати:')
+                    Items.add_widget(label_for_Items)
+                    for i in columns:
+                        if 'float' in str(list_of_types[i]) or 'int' in str(list_of_types[i]):Items.add_widget(Button(text=i, on_press=items_function))
+                    Items.add_widget(exit_from_ItemsScreen)
+                    Items_X_Y_Screen.add_widget(Items)
+                except KeyError:
+                    Items = GridLayout(cols=3, rows=len_columns)
+                    exit_from_ItemsScreen = Button(text='Повернутися \nназад', background_color=[1, 0, 0, 1],
+                                                   on_press=func_exit_from_ItemsScreen)
+                    label_for_Items = Label(text='Усі значення\nякі можна обрати:')
+                    Items.add_widget(label_for_Items)
+                    for i in columns:
+                        if 'float' in str(list_of_types[i]) or 'int' in str(list_of_types[i]): Items.add_widget(
+                            Button(text=i, on_press=items_function))
+                    Items.add_widget(exit_from_ItemsScreen)
+                    Items_X_Y_Screen.add_widget(Items)
             elif screen=='items_h':
-                for i in columns:Items.add_widget(Button(text=i, on_press=items_function))
-                Items.add_widget(exit_from_ItemsScreen)
-                Items_H_Screen.add_widget(Items)
+                try:
+                    Items_H_Screen.remove_widget(Items)
+                    Items = GridLayout(cols=3, rows=len_columns)
+                    exit_from_ItemsScreen = Button(text='Повернутися \nназад', background_color=[1, 0, 0, 1],on_press=func_exit_from_ItemsScreen)
+                    label_for_Items = Label(text='Усі значення\nякі можна обрати:')
+                    Items.add_widget(label_for_Items)
+                    for i in columns:Items.add_widget(Button(text=i, on_press=items_function))
+                    Items.add_widget(exit_from_ItemsScreen)
+                    Items_H_Screen.add_widget(Items)
+                except KeyError:
+                    Items = GridLayout(cols=3, rows=len_columns)
+                    exit_from_ItemsScreen = Button(text='Повернутися \nназад', background_color=[1, 0, 0, 1],
+                                                   on_press=func_exit_from_ItemsScreen)
+                    label_for_Items = Label(text='Усі значення\nякі можна обрати:')
+                    Items.add_widget(label_for_Items)
+                    for i in columns: Items.add_widget(Button(text=i, on_press=items_function))
+                    Items.add_widget(exit_from_ItemsScreen)
+                    Items_H_Screen.add_widget(Items)
 
 
 ###########################################################################################
@@ -232,7 +267,10 @@ class cursachApp(App):
                     data_x=file[X].tolist()
                     data_y=file[Y].tolist()
                     graphic,ax=pyplot.subplots()
-                    ax.plot(data_x,data_y)
+                    ax.plot(data_x,data_y,'ro',color='black')
+                    ax.set_xlabel(X)
+                    ax.set_ylabel(Y)
+                    ax.set_title(f'Залежність {Y} від {X}')
                     graphic.savefig(f'scatterplot for {X} and {Y}')
 
                     Picture=AnchorLayout(anchor_x='center',anchor_y='top',padding=[300,-100,50,50])
@@ -282,14 +320,13 @@ class cursachApp(App):
 
         Situation = AnchorLayout(anchor_x='right', anchor_y="top", padding=[25, 25, 25, 25])
         situation=Label(text='Оберіть csv-файл')
-        Situation.add_widget(situation)
+        #Situation.add_widget(situation)
 
         full_interface = FloatLayout()
         full_interface.add_widget(Create)
         full_interface.add_widget(Save)
         full_interface.add_widget(Exit)
         full_interface.add_widget(Situation)
-
 
         dropdown = DropDown()
 
@@ -313,13 +350,17 @@ class cursachApp(App):
         points.bind(on_release=lambda points: dropdown.select(points.text), on_press=point_press)
         dropdown.add_widget(points)
 
-        mainbutton = Button(text='Вид графіка', size_hint=[0.3, 0.2])
+        mainbutton = Button(text='Вид графіка')
         mainbutton.bind(on_release=dropdown.open)
         dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
 
 
         Type_of_graphic = AnchorLayout(anchor_x='left', anchor_y="top", padding=[25, 25, 25, 25])
-        Type_of_graphic.add_widget(mainbutton)
+        Hist_with_situation=BoxLayout(orientation='vertical',spacing='5', size_hint=[0.3, 0.2])
+        Hist_with_situation.add_widget(situation)
+        Hist_with_situation.add_widget(mainbutton)
+        Type_of_graphic.add_widget(Hist_with_situation)
+
         full_interface.add_widget(Type_of_graphic)
         MenuScreen.add_widget(full_interface)
 
