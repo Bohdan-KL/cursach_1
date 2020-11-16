@@ -22,7 +22,7 @@ Config.set("graphics", "resiziable", '0')
 Config.set("graphics", "width", '640')
 Config.set("graphics", "height", '480')
 
-X=Y=H=lim=lim1=file=key=False
+X=Y=H=lim=lim1=file=list_of_types=columns=key=False
 
 way_to_file=''
 len_columns=1000
@@ -40,10 +40,12 @@ sm.transition=RiseInTransition()
 
 MenuScreen=Screen(name='menu')
 ChooseScreen=Screen(name='choose')
-ItemsScreen=Screen(name='items')
+Items_H_Screen=Screen(name='items_h')
+Items_X_Y_Screen=Screen(name='items_x_y')
 sm.add_widget(MenuScreen)
 sm.add_widget(ChooseScreen)
-sm.add_widget(ItemsScreen)
+sm.add_widget(Items_H_Screen)
+sm.add_widget(Items_X_Y_Screen)
 
 
 class cursachApp(App):
@@ -56,7 +58,6 @@ class cursachApp(App):
                     situation.text = 'Графік обрано\nОберіть файл'
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
-                    create_items()
                 full_interface.add_widget(hist)
                 lim = True
             elif not lim and lim1:
@@ -64,7 +65,6 @@ class cursachApp(App):
                     situation.text = 'Графік обрано\nОберіть файл'
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
-                    create_items()
                 X = Y = H = False
                 button_x.text='Значення х'
                 button_y.text = 'Значення у'
@@ -78,8 +78,6 @@ class cursachApp(App):
                     situation.text = 'Графік обрано\nОберіть файл'
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
-                    create_items()
-
                 full_interface.remove_widget(Point_x_y)
                 lim1 = False
             print(X, Y, H)
@@ -91,7 +89,6 @@ class cursachApp(App):
                     situation.text = 'Графік обрано\nОберіть файл'
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
-                    create_items()
                 full_interface.add_widget(Point_x_y)
                 lim1 = True
             elif not lim1 and lim:
@@ -99,7 +96,6 @@ class cursachApp(App):
                     situation.text = 'Графік обрано\nОберіть файл'
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
-                    create_items()
                 X = Y = H = False
                 button_x.text = 'Значення х'
                 button_y.text = 'Значення у'
@@ -113,7 +109,6 @@ class cursachApp(App):
                     situation.text = 'Графік обрано\nОберіть файл'
                 elif situation.text == "Файл обрано\nОберіть вид графіка":
                     situation.text = 'Файл і графік обрано\nОберіть значення'
-                    create_items()
                 full_interface.remove_widget(hist)
                 lim = False
             print(X, Y, H)
@@ -129,7 +124,7 @@ class cursachApp(App):
             key = True
             way_to_file = Way_to_file
             situation.text = "Файл обрано"
-            create_items()
+            read_file()
             sm.transition = FallOutTransition()
             sm.current = 'menu'
             sm.transition = RiseInTransition()
@@ -164,53 +159,64 @@ class cursachApp(App):
             sm.current = 'menu'
             sm.transition = RiseInTransition()
 
-
 ###########################################################################################
-        def create_items():
-            global file, key
+        def create_items(screen):
+            global len_columns,list_of_types,columns
+            Items = GridLayout(cols=3, rows=len_columns)
+            if screen=='items_x_y':
+                for i in columns:
+                    if 'float' in str(list_of_types[i]) or 'int' in str(list_of_types[i]):Items.add_widget(Button(text=i, on_press=items_function))
+                Items_X_Y_Screen.add_widget(Items)
+            elif screen=='items_h':
+                for i in columns:Items.add_widget(Button(text=i, on_press=items_function))
+                Items_H_Screen.add_widget(Items)
+###########################################################################################
+        def read_file():
+            global file, key,list_of_types,len_columns,columns
             file = pd.read_csv(way_to_file[0])
             columns = file.columns.tolist()
-            global len_columns
-            len_columns = ((len(columns)) // 3)
-            Items = GridLayout(cols=3, rows=len_columns)
-            if len(columns) % 3 != 0: len_columns += 1
             for i in columns:
-                Items.add_widget(Button(text=i, on_press=items_function))
-            ItemsScreen.add_widget(Items)
+                file[i] = pd.to_numeric(file[i], errors='ignore')
+            list_of_types=file.dtypes
+            len_columns = ((len(columns)) // 3)
+            if len(columns) % 3 != 0: len_columns += 1
     # sm.current = 'items'
-    # print(columns)
 #################################################################################################################
         def choose_item_item(self):
-            global H
+            global H,len_columns
+
             if len_columns!=1000:
                 H=3
-                sm.current='items'
+                create_items('items_h')
+                sm.current='items_h'
                 sm.transition = FallOutTransition()
             elif "\nСпершу оберіть файл" not in situation.text:situation.text+="\nСпершу оберіть файл"
             print(X,Y,H)
+
 #################################################################################################################
         def choose_item_x(self):
-            global X
+            global X,len_columns
             if len_columns!=1000:
                 X=1
-                sm.current='items'
+                create_items('items_x_y')
+                sm.current='items_x_y'
                 sm.transition = FallOutTransition()
             elif "\nСпершу оберіть файл" not in situation.text:situation.text+="\nСпершу оберіть файл"
             print(X, Y, H)
 #################################################################################################################
         def choose_item_y(self):
-            global Y
+            global Y,len_columns
             if len_columns!=1000:
                 Y=2
-                sm.current='items'
+                create_items('items_x_y')
+                sm.current='items_x_y'
                 sm.transition = FallOutTransition()
             elif "\nСпершу оберіть файл" not in situation.text:situation.text+="\nСпершу оберіть файл"
             print(X, Y, H)
 #################################################################################################################
         def create_graphic(self):
             global file,X,Y,H
-            if key:
-                if X and Y and not H:
+            if X and Y and not H:
                     data_x=file[X].tolist()
                     data_y=file[Y].tolist()
                     graphic,ax=pyplot.subplots()
@@ -225,13 +231,13 @@ class cursachApp(App):
 
                     #print(graphic)
 
-                elif not X and not Y and H:
+            elif not X and not Y and H:
                     print(0)
-                elif not X and not Y and not H:
+            elif not X and not Y and not H:
                     if '\nОберіть значення!' not in situation.text: situation.text = '\nОберіть значення!'
-                elif not X and Y and not H:
+            elif not X and Y and not H:
                     if '\nОберіть значення x!' not in situation.text: situation.text = '\nОберіть значення x!'
-                elif X and not Y and not H:
+            elif X and not Y and not H:
                     if '\nОберіть значення y!' not in situation.text: situation.text = '\nОберіть значення y!'
             elif '\nОберіть файл!' not in situation.text:situation.text='\nОберіть файл!'
 
