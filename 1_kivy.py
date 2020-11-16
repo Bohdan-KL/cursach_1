@@ -16,12 +16,11 @@ from matplotlib import pyplot
 import pandas as pd
 import os
 
-
+Config.set('graphics', 'fullscreen', 0)
 Config.set("graphics", "resiziable", '0')
 Config.set("graphics", "width", '640')
 Config.set("graphics", "height", '480')
 Config.write()
-
 
 X=Y=H=lim=lim1=file=list_of_types=columns=key=last_version_of_graphic=False
 
@@ -359,7 +358,6 @@ class cursachApp(App):
         ###########################################################################################
         sm.current = 'menu'
         return sm
-
 if __name__ == '__main__':
     cursachApp().run()
 #python 1_kivy.py
