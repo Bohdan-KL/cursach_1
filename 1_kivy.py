@@ -3,7 +3,7 @@ from kivy.uix.button import Button
 from kivy.uix.anchorlayout import AnchorLayout
 from kivy.config import Config
 from kivy.uix.dropdown import DropDown
-from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.relativelayout import RelativeLayout
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -12,17 +12,17 @@ from kivy.uix.screenmanager import FallOutTransition
 from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
-import pandas as pd
 from matplotlib import pyplot
+import pandas as pd
+import os
 
 
 
 
-Config.set("graphics", "resiziable", '0')
-Config.set("graphics", "width", '640')
-Config.set("graphics", "height", '480')
+Config.set('graphics','fullscreen',True)
+Config.write()
 
-X=Y=H=lim=lim1=file=list_of_types=columns=key=False
+X=Y=H=lim=lim1=file=list_of_types=columns=key=last_version_of_graphic=False
 
 way_to_file=''
 len_columns=1000
@@ -175,7 +175,7 @@ class cursachApp(App):
             global len_columns,list_of_types,columns,Items
             if screen=='items_x_y':
                 try:
-                    Items_X_Y_Screen.remove_widget(Items)
+                    Items_X_Y_Screen.clear_widgets()
                     Items = GridLayout(cols=3, rows=len_columns)
                     exit_from_ItemsScreen = Button(text='Повернутися \nназад', background_color=[1, 0, 0, 1],on_press=func_exit_from_ItemsScreen)
                     label_for_Items = Label(text='Усі значення\nякі можна обрати:')
@@ -197,7 +197,7 @@ class cursachApp(App):
                     Items_X_Y_Screen.add_widget(Items)
             elif screen=='items_h':
                 try:
-                    Items_H_Screen.remove_widget(Items)
+                    Items_H_Screen.clear_widgets()
                     Items = GridLayout(cols=3, rows=len_columns)
                     exit_from_ItemsScreen = Button(text='Повернутися \nназад', background_color=[1, 0, 0, 1],on_press=func_exit_from_ItemsScreen)
                     label_for_Items = Label(text='Усі значення\nякі можна обрати:')
@@ -262,7 +262,7 @@ class cursachApp(App):
             print(X, Y, H)
 #################################################################################################################
         def create_graphic(self):
-            global file,X,Y,H
+            global file,X,Y,H,last_version_of_graphic
             if X and Y and not H:
                     data_x=file[X].tolist()
                     data_y=file[Y].tolist()
@@ -272,17 +272,33 @@ class cursachApp(App):
                     ax.set_ylabel(Y)
                     ax.set_title(f'Залежність {Y} від {X}')
                     graphic.savefig(f'scatterplot for {X} and {Y}')
-
+                    last_version_of_graphic=graphic
                     Picture=AnchorLayout(anchor_x='center',anchor_y='top',padding=[300,-100,50,50])
                     picture=Image(source=f'scatterplot for {X} and {Y}.png')
+                    os.remove(f'scatterplot for {X} and {Y}.png')
                     Picture.add_widget(picture)
                     full_interface.add_widget(Picture)
                     situation.text='Графік побудовано'
 
                     #print(graphic)
-
             elif not X and not Y and H:
-                    print(0)
+                data_h = file[H].tolist()
+
+                pyplot.hist(x=data_h,color='silver',edgecolor='black')
+                pyplot.xlabel(H)
+                pyplot.ylabel("Кількісь")
+                pyplot.title(f'Розподіл {H}')
+                graphic=pyplot.figure
+                pyplot.savefig(f'histogram for {H}.png')
+                last_version_of_graphic = graphic
+                Picture = AnchorLayout(anchor_x='right', anchor_y='top',padding=[300,-100,50,50])
+                picture = Image(source=f'histogram for {H}.png')
+                os.remove(f'histogram for {H}.png')
+                Picture.add_widget(picture)
+                full_interface.add_widget(Picture)
+                pyplot.gcf().clear()
+                situation.text = 'Графік побудовано'
+
             elif not X and not Y and not H:
                     if '\nОберіть значення!' not in situation.text: situation.text = '\nОберіть значення!'
             elif not X and Y and not H:
@@ -322,7 +338,7 @@ class cursachApp(App):
         situation=Label(text='Оберіть csv-файл')
         #Situation.add_widget(situation)
 
-        full_interface = FloatLayout()
+        full_interface = RelativeLayout()
         full_interface.add_widget(Create)
         full_interface.add_widget(Save)
         full_interface.add_widget(Exit)
