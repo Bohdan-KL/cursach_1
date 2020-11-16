@@ -160,16 +160,27 @@ class cursachApp(App):
             sm.transition = RiseInTransition()
 
 ###########################################################################################
+        def func_exit_from_ItemsScreen(self):
+            sm.current = 'menu'
+            sm.transition = RiseInTransition()
+###########################################################################################
         def create_items(screen):
             global len_columns,list_of_types,columns
             Items = GridLayout(cols=3, rows=len_columns)
+            exit_from_ItemsScreen = Button(text='Повернутися \nназад', background_color=[1, 0, 0, 1],on_press=func_exit_from_ItemsScreen)
+            label_for_Items=Label(text='Усі значення\nякі можна обрати:')
+            Items.add_widget(label_for_Items)
             if screen=='items_x_y':
                 for i in columns:
                     if 'float' in str(list_of_types[i]) or 'int' in str(list_of_types[i]):Items.add_widget(Button(text=i, on_press=items_function))
+                Items.add_widget(exit_from_ItemsScreen)
                 Items_X_Y_Screen.add_widget(Items)
             elif screen=='items_h':
                 for i in columns:Items.add_widget(Button(text=i, on_press=items_function))
+                Items.add_widget(exit_from_ItemsScreen)
                 Items_H_Screen.add_widget(Items)
+
+
 ###########################################################################################
         def read_file():
             global file, key,list_of_types,len_columns,columns
@@ -179,7 +190,8 @@ class cursachApp(App):
                 file[i] = pd.to_numeric(file[i], errors='ignore')
             list_of_types=file.dtypes
             len_columns = ((len(columns)) // 3)
-            if len(columns) % 3 != 0: len_columns += 1
+            if len(columns) % 3 != 0: len_columns += 2
+            else:len_columns+=1
     # sm.current = 'items'
 #################################################################################################################
         def choose_item_item(self):
@@ -227,7 +239,7 @@ class cursachApp(App):
                     picture=Image(source=f'scatterplot for {X} and {Y}.png')
                     Picture.add_widget(picture)
                     full_interface.add_widget(Picture)
-
+                    situation.text='Графік побудовано'
 
                     #print(graphic)
 
