@@ -17,10 +17,11 @@ import pandas as pd
 import os
 
 
-
-
-Config.set('graphics','fullscreen',True)
+Config.set("graphics", "resiziable", '0')
+Config.set("graphics", "width", '640')
+Config.set("graphics", "height", '480')
 Config.write()
+
 
 X=Y=H=lim=lim1=file=list_of_types=columns=key=last_version_of_graphic=False
 
@@ -34,10 +35,8 @@ class ChooseScreen(Screen):
 class ItemsScreen(Screen):
     pass
 
-
 sm = ScreenManager()
 sm.transition=RiseInTransition()
-
 MenuScreen=Screen(name='menu')
 ChooseScreen=Screen(name='choose')
 Items_H_Screen=Screen(name='items_h')
@@ -47,11 +46,8 @@ sm.add_widget(ChooseScreen)
 sm.add_widget(Items_H_Screen)
 sm.add_widget(Items_X_Y_Screen)
 
-
 class cursachApp(App):
     def build(self):
-
-
 
 ############################################################################################################
         def hist_press(self):
@@ -83,7 +79,6 @@ class cursachApp(App):
                     situation.text = 'Файл і графік обрано\nОберіть значення'
                 full_interface.remove_widget(Point_x_y)
                 lim1 = False
-            print(X, Y, H)
 ########################################################################################################
         def point_press(self):
             global lim, lim1, X, Y, H
@@ -114,13 +109,11 @@ class cursachApp(App):
                     situation.text = 'Файл і графік обрано\nОберіть значення'
                 full_interface.remove_widget(hist)
                 lim = False
-            print(X, Y, H)
 #################################################################################################################
         def to_chooser(self):
             sm.current = 'choose'
 #################################################################################################################
         Ch = AnchorLayout(anchor_x='left', anchor_y="top")
-
         def open_chooser(self, Way_to_file, MouseMotionEvent):
             global way_to_file, X, Y, H, key
             X = Y = H = False
@@ -131,17 +124,13 @@ class cursachApp(App):
             sm.transition = FallOutTransition()
             sm.current = 'menu'
             sm.transition = RiseInTransition()
-            print(X, Y, H)
             if '\nОберіть файл!' in situation.text: situation.text = situation.text.replace('\nОберіть файл!', '')
 
         Chooser = FileChooserListView(on_submit=open_chooser)
         Chooser.filters = ['*.csv']
         Ch.add_widget(Chooser)
         ChooseScreen.add_widget(Ch)
-
-
 ###########################################################################################
-
         def items_function(self):
             global X, Y, H
             if X == 1:
@@ -157,10 +146,8 @@ class cursachApp(App):
                 hist_b.text = H
                 situation.text = "Будуйте графік"
             if X and X != 1 and Y and Y != 1: situation.text = "Будуйте графік"
-            print(X, Y, H)
             sm.current = 'menu'
             sm.transition = RiseInTransition()
-
 ###########################################################################################
         def func_exit_from_ItemsScreen(self):
             global X,Y,H
@@ -214,8 +201,6 @@ class cursachApp(App):
                     for i in columns: Items.add_widget(Button(text=i, on_press=items_function))
                     Items.add_widget(exit_from_ItemsScreen)
                     Items_H_Screen.add_widget(Items)
-
-
 ###########################################################################################
         def read_file():
             global file, key,list_of_types,len_columns,columns
@@ -227,7 +212,6 @@ class cursachApp(App):
             len_columns = ((len(columns)) // 3)
             if len(columns) % 3 != 0: len_columns += 2
             else:len_columns+=1
-    # sm.current = 'items'
 #################################################################################################################
         def choose_item_item(self):
             global H,len_columns
@@ -238,8 +222,6 @@ class cursachApp(App):
                 sm.current='items_h'
                 sm.transition = FallOutTransition()
             elif "\nСпершу оберіть файл" not in situation.text:situation.text+="\nСпершу оберіть файл"
-            print(X,Y,H)
-
 #################################################################################################################
         def choose_item_x(self):
             global X,len_columns
@@ -249,7 +231,6 @@ class cursachApp(App):
                 sm.current='items_x_y'
                 sm.transition = FallOutTransition()
             elif "\nСпершу оберіть файл" not in situation.text:situation.text+="\nСпершу оберіть файл"
-            print(X, Y, H)
 #################################################################################################################
         def choose_item_y(self):
             global Y,len_columns
@@ -259,7 +240,6 @@ class cursachApp(App):
                 sm.current='items_x_y'
                 sm.transition = FallOutTransition()
             elif "\nСпершу оберіть файл" not in situation.text:situation.text+="\nСпершу оберіть файл"
-            print(X, Y, H)
 #################################################################################################################
         def create_graphic(self):
             global file,X,Y,H,last_version_of_graphic
@@ -279,8 +259,6 @@ class cursachApp(App):
                     Picture.add_widget(picture)
                     full_interface.add_widget(Picture)
                     situation.text='Графік побудовано'
-
-                    #print(graphic)
             elif not X and not Y and H:
                 data_h = file[H].tolist()
 
@@ -306,7 +284,6 @@ class cursachApp(App):
             elif X and not Y and not H:
                     if '\nОберіть значення y!' not in situation.text: situation.text = '\nОберіть значення y!'
             elif '\nОберіть файл!' not in situation.text:situation.text='\nОберіть файл!'
-
 #################################################################################################################
         Create = AnchorLayout(anchor_x='left', anchor_y="bottom", padding=[25, 25, 25, 25])
         create = Button(text="Створити", size_hint=[0.3, 0.2])
@@ -379,7 +356,6 @@ class cursachApp(App):
 
         full_interface.add_widget(Type_of_graphic)
         MenuScreen.add_widget(full_interface)
-
         ###########################################################################################
         sm.current = 'menu'
         return sm
