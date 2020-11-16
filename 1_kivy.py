@@ -112,11 +112,15 @@ class cursachApp(App):
         def to_chooser(self):
             sm.current = 'choose'
 #################################################################################################################
-        Ch = AnchorLayout(anchor_x='left', anchor_y="top")
+        Ch = AnchorLayout(anchor_x='left', anchor_y="center")
         def open_chooser(self, Way_to_file, MouseMotionEvent):
             global way_to_file, X, Y, H, key
+            print(way_to_file)
             X = Y = H = False
             key = True
+            button_y.text="Значення у"
+            button_x.text="Значення х"
+            hist_b.text="Значення"
             way_to_file = Way_to_file
             situation.text = "Файл обрано"
             read_file()
@@ -124,6 +128,7 @@ class cursachApp(App):
             sm.current = 'menu'
             sm.transition = RiseInTransition()
             if '\nОберіть файл!' in situation.text: situation.text = situation.text.replace('\nОберіть файл!', '')
+
 
         Chooser = FileChooserListView(on_submit=open_chooser)
         Chooser.filters = ['*.csv']
@@ -258,6 +263,7 @@ class cursachApp(App):
                     Picture.add_widget(picture)
                     full_interface.add_widget(Picture)
                     situation.text='Графік побудовано'
+                    pyplot.gcf().clear()
             elif not X and not Y and H:
                 data_h = file[H].tolist()
 
@@ -326,7 +332,7 @@ class cursachApp(App):
         hist_b = Button(text='Значення', size_hint=[0.3, 0.2],on_press=choose_item_item)
         hist.add_widget(hist_b)
 
-        histogram = Button(text='Гістограма', size_hint_y=None, height=70, background_color=[0.2, 0.8, 0.6, 1])
+        histogram = Button(text='Гістограма', size_hint_y=None, height=60, background_color=[0.2, 0.8, 0.6, 1])
         histogram.bind(on_release=lambda histogram: dropdown.select(histogram.text), on_press=hist_press)
         dropdown.add_widget(histogram)
 
@@ -338,12 +344,12 @@ class cursachApp(App):
         point_x_y.add_widget(button_y)
         Point_x_y.add_widget(point_x_y)
 
-        points = Button(text='Точковий', size_hint_y=None, height=70, background_color=[0.2, 0.8, 0.6, 1])
+        points = Button(text='Точковий', size_hint_y=None, height=60, background_color=[0.2, 0.8, 0.6, 1])
         points.bind(on_release=lambda points: dropdown.select(points.text), on_press=point_press)
         dropdown.add_widget(points)
 
         mainbutton = Button(text='Вид графіка')
-        mainbutton.bind(on_release=dropdown.open)
+        mainbutton.bind(on_release=dropdown.open,on_press=lambda x:print(dropdown))
         dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
 
 
