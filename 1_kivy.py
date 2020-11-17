@@ -13,17 +13,18 @@ from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
 from matplotlib import pyplot
+from kivy.core.window import Window
 import pandas as pd
 import os
 
+Window.fullscreen = 'auto'
 Config.set('graphics', 'fullscreen', 0)
 Config.set("graphics", "resiziable", '0')
-Config.set("graphics", "width", '640')
-Config.set("graphics", "height", '480')
-Config.write()
+Config.set("graphics", "width", str(Window.width))
+Config.set("graphics", "height", str(Window.height))
 
 X=Y=H=lim=lim1=file=list_of_types=columns=key=last_version_of_graphic=False
-
+Picture=AnchorLayout(anchor_x='center',anchor_y='top',padding=[300,-100,50,50])
 way_to_file=''
 len_columns=1000
 Items = GridLayout(cols=3, rows=len_columns)
@@ -44,10 +45,9 @@ sm.add_widget(MenuScreen)
 sm.add_widget(ChooseScreen)
 sm.add_widget(Items_H_Screen)
 sm.add_widget(Items_X_Y_Screen)
-
+pyplot.hist(x=[1,2,3])
 class cursachApp(App):
     def build(self):
-
 ############################################################################################################
         def hist_press(self):
             global lim,lim1,X,Y,H
@@ -114,8 +114,9 @@ class cursachApp(App):
 #################################################################################################################
         Ch = AnchorLayout(anchor_x='left', anchor_y="center")
         def open_chooser(self, Way_to_file, MouseMotionEvent):
-            global way_to_file, X, Y, H, key
+            global way_to_file, X, Y, H, key,Picture
             print(way_to_file)
+            Picture.clear_widgets()
             X = Y = H = False
             key = True
             button_y.text="Значення у"
@@ -128,8 +129,6 @@ class cursachApp(App):
             sm.current = 'menu'
             sm.transition = RiseInTransition()
             if '\nОберіть файл!' in situation.text: situation.text = situation.text.replace('\nОберіть файл!', '')
-
-
         Chooser = FileChooserListView(on_submit=open_chooser)
         Chooser.filters = ['*.csv']
         Ch.add_widget(Chooser)
@@ -219,7 +218,6 @@ class cursachApp(App):
 #################################################################################################################
         def choose_item_item(self):
             global H,len_columns
-
             if len_columns!=1000:
                 H=3
                 create_items('items_h')
@@ -246,7 +244,7 @@ class cursachApp(App):
             elif "\nСпершу оберіть файл" not in situation.text:situation.text+="\nСпершу оберіть файл"
 #################################################################################################################
         def create_graphic(self):
-            global file,X,Y,H,last_version_of_graphic
+            global file,X,Y,H,last_version_of_graphic,Picture
             if X and Y and not H:
                     data_x=file[X].tolist()
                     data_y=file[Y].tolist()
@@ -256,9 +254,9 @@ class cursachApp(App):
                     ax.set_ylabel(Y)
                     ax.set_title(f'Залежність {Y} від {X}')
                     graphic.savefig(f'scatterplot for {X} and {Y}')
-                    last_version_of_graphic=graphic
                     Picture=AnchorLayout(anchor_x='center',anchor_y='top',padding=[300,-100,50,50])
                     picture=Image(source=f'scatterplot for {X} and {Y}.png')
+                    last_version_of_graphic = picture
                     os.remove(f'scatterplot for {X} and {Y}.png')
                     Picture.add_widget(picture)
                     full_interface.add_widget(Picture)
@@ -271,16 +269,15 @@ class cursachApp(App):
                 pyplot.xlabel(H)
                 pyplot.ylabel("Кількісь")
                 pyplot.title(f'Розподіл {H}')
-                graphic=pyplot.figure
                 pyplot.savefig(f'histogram for {H}.png')
-                last_version_of_graphic = graphic
                 Picture = AnchorLayout(anchor_x='right', anchor_y='top',padding=[300,-100,50,50])
                 picture = Image(source=f'histogram for {H}.png')
+                last_version_of_graphic=picture
                 os.remove(f'histogram for {H}.png')
                 Picture.add_widget(picture)
                 full_interface.add_widget(Picture)
                 pyplot.gcf().clear()
-                situation.text = 'Графік побудовано'
+                situation.text = 'Гістограму побудовано'
 
             elif not X and not Y and not H:
                     if '\nОберіть значення!' not in situation.text: situation.text = '\nОберіть значення!'
@@ -289,6 +286,18 @@ class cursachApp(App):
             elif X and not Y and not H:
                     if '\nОберіть значення y!' not in situation.text: situation.text = '\nОберіть значення y!'
             elif '\nОберіть файл!' not in situation.text:situation.text='\nОберіть файл!'
+#################################################################################################################
+        def saving_graphic(self):
+            global last_version_of_graphic
+            print(last_version_of_graphic)
+            if situation.text=="Графік побудовано" or situation.text=='Графік збережено':
+                last_version_of_graphic.export_to_png(f'scatterplot for {X} and {Y}.png')
+                situation.text='Графік збережено'
+            elif situation.text=="Гістограму побудовано" or situation.text=="Гістограму збережено":
+                last_version_of_graphic.export_to_png(f'histogram for {H}.png')
+                situation.text="Гістограму збережено"
+            else:situation.text="Спершу виконайте \nпобудову"
+
 #################################################################################################################
         Create = AnchorLayout(anchor_x='left', anchor_y="bottom", padding=[25, 25, 25, 25])
         create = Button(text="Створити", size_hint=[0.3, 0.2])
@@ -302,29 +311,30 @@ class cursachApp(App):
         Create.add_widget(Choose)
 
         Save = AnchorLayout(anchor_x='center', anchor_y="bottom", padding=[25, 25, 25, 25])
-        save = Button(text='Зберегти', size_hint=[0.3, 0.2])
-        Save.add_widget(save)
-        Save = AnchorLayout(anchor_x='center', anchor_y="bottom", padding=[25, 25, 25, 25])
         Choose2 = BoxLayout(orientation='vertical', spacing='5', size_hint=[0.3, 0.2])
-        save = Button(text='Зберегти', background_color=[0, 1, 0, 1])
-        new = Button(text="Новий", background_color=[0.8, 0.8, 0, 1])
+        save = Button(text='Зберегти', background_color=[0, 1, 0, 1],on_press=saving_graphic)
         Choose2.add_widget(save)
-        Choose2.add_widget(new)
         Save.add_widget(Choose2)
 
         Exit = AnchorLayout(anchor_x='right', anchor_y="bottom", padding=[25, 25, 25, 25])
-        exit = Button(text='Вийти', size_hint=[0.3, 0.2], background_color=[1, 0, 0, 1])
-        Exit.add_widget(exit)
+        Exit_with_label=BoxLayout(orientation='vertical', spacing='5', size_hint=[0.3, 0.2])
+        exit = Button(text='Вийти', background_color=[1, 0, 0, 1],on_press=cursachApp.get_running_app().stop)
+        Exit_with_label.add_widget(exit)
+        Creator_name=Label(text='Created by\nBohdan Klots',color=[1, 0, 0, 1])
+        Exit_with_label.add_widget(Creator_name)
+        Exit.add_widget(Exit_with_label)
 
         Situation = AnchorLayout(anchor_x='right', anchor_y="top", padding=[25, 25, 25, 25])
         situation=Label(text='Оберіть csv-файл')
-        #Situation.add_widget(situation)
 
         full_interface = RelativeLayout()
         full_interface.add_widget(Create)
         full_interface.add_widget(Save)
         full_interface.add_widget(Exit)
         full_interface.add_widget(Situation)
+
+        Picture = AnchorLayout(anchor_x='center', anchor_y='top', padding=[300, -100, 50, 50])
+        full_interface.add_widget(Picture)
 
         dropdown = DropDown()
 
@@ -352,7 +362,6 @@ class cursachApp(App):
         mainbutton.bind(on_release=dropdown.open,on_press=lambda x:print(dropdown))
         dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
 
-
         Type_of_graphic = AnchorLayout(anchor_x='left', anchor_y="top", padding=[25, 25, 25, 25])
         Hist_with_situation=BoxLayout(orientation='vertical',spacing='5', size_hint=[0.3, 0.2])
         Hist_with_situation.add_widget(situation)
@@ -366,4 +375,3 @@ class cursachApp(App):
         return sm
 if __name__ == '__main__':
     cursachApp().run()
-#python 1_kivy.py
