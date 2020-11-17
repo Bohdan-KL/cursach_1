@@ -13,15 +13,12 @@ from kivy.uix.label import Label
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
 from matplotlib import pyplot
-from kivy.core.window import Window
 import pandas as pd
 import os
 
-Window.fullscreen = 'auto'
 Config.set('graphics', 'fullscreen', 0)
-Config.set("graphics", "resiziable", '0')
-Config.set("graphics", "width", str(Window.width))
-Config.set("graphics", "height", str(Window.height))
+Config.write()
+
 
 X=Y=H=lim=lim1=file=list_of_types=columns=key=last_version_of_graphic=False
 Picture=AnchorLayout(anchor_x='center',anchor_y='top',padding=[300,-100,50,50])
